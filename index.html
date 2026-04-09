@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOAA Data Review Simulator</title>
+  <style>
+    :root {
+      --bg: #f4f7f3;
+      --card: #ffffff;
+      --text: #1f2a2a;
+      --muted: #5f6f6c;
+      --accent: #2f6f62;
+      --accent-2: #5a8f7b;
+      --blue: #4d7ea8;
+      --sand: #e9ddc7;
+      --warm: #c97a52;
+      --border: #d6e0da;
+      --shadow: 0 8px 24px rgba(34, 55, 48, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #eef5f1 0%, #f8faf7 100%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #dfeee6 0%, #edf5f9 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      color: #214a42;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 18px 0 26px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      border-radius: 14px;
+      padding: 12px 16px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 6px 18px rgba(47, 111, 98, 0.22);
+    }
+
+    .btn-primary:hover {
+      background: #295f54;
+    }
+
+    .btn-secondary {
+      background: #e8f0ed;
+      color: #22423c;
+      border: 1px solid #cddcd6;
+    }
+
+    .btn-secondary:hover {
+      background: #dde9e4;
+    }
+
+    .btn-warm {
+      background: #f4e4d7;
+      color: #7a4b2f;
+      border: 1px solid #e6ccb7;
+    }
+
+    .btn-danger {
+      background: #fff0ed;
+      color: #9a4730;
+      border: 1px solid #efc7bc;
+    }
+
+    .choices-view,
+    .panel-view {
+      display: none;
+    }
+
+    .choices-view.active,
+    .panel-view.active {
+      display: block;
+    }
+
+    .choices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+    }
+
+    .choice-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 170px;
+    }
+
+    .choice-card h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: #23463f;
+    }
+
+    .choice-card p {
+      margin: 0;
+      color: var(--muted);
+      flex-grow: 1;
+    }
+
+    .tag {
+      display: inline-block;
+      align-self: flex-start;
+      background: #eef6f2;
+      color: #2f6f62;
+      border: 1px solid #d5e8df;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .panel-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .investigating {
+      margin: 0 0 8px;
+      color: #356257;
+      font-size: 0.98rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .panel-title {
+      margin: 0 0 10px;
+      font-size: clamp(1.5rem, 2.2vw, 2rem);
+      color: #1f4a43;
+    }
+
+    .explanation {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .chart-wrap {
+      margin-top: 18px;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      background: linear-gradient(180deg, #fbfdfc 0%, #f2f7f5 100%);
+      border: 1px solid #d8e3dd;
+      border-radius: 16px;
+      display: block;
+    }
+
+    .tip-box {
+      margin-top: 16px;
+      background: #eef6fb;
+      border: 1px solid #d6e6f2;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .tip-box h4 {
+      margin: 0 0 6px;
+      color: #2b5f87;
+      font-size: 1rem;
+    }
+
+    .tip-box p {
+      margin: 0;
+      color: #45697d;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #24423d;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 108px;
+      resize: vertical;
+      border: 1px solid #ccd8d1;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--text);
+      background: #fcfefd;
+    }
+
+    textarea:focus {
+      outline: 3px solid rgba(77, 126, 168, 0.15);
+      border-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .status {
+      margin-top: 14px;
+      min-height: 28px;
+      font-weight: 600;
+      color: #2c675b;
+    }
+
+    .saved-list {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px dashed #d6e0da;
+    }
+
+    .saved-list h4 {
+      margin: 0 0 10px;
+      color: #305a51;
+    }
+
+    .saved-item {
+      background: #f7faf8;
+      border: 1px solid #dce6e0;
+      border-radius: 14px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+
+    .saved-item strong {
+      color: #23443d;
+    }
+
+    .saved-item p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 860px) {
+      .panel-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero,
+      .card,
+      .choice-card {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>NOAA Data Review Simulator</h1>
+      <p>Jordan has pulled several NOAA indicators. Which one should you investigate first?</p>
+    </section>
+
+    <div class="toolbar">
+      <button id="resumeBtn" class="btn-secondary">Resume Saved Work</button>
+      <button id="exportBtn" class="btn-warm">Export My Notes</button>
+      <button id="resetBtn" class="btn-danger">Reset Simulator</button>
+    </div>
+
+    <section id="choicesView" class="choices-view active">
+      <div class="choices-grid" id="choicesGrid"></div>
+    </section>
+
+    <section id="panelView" class="panel-view">
+      <div class="panel-layout">
+        <div class="card">
+          <p class="investigating" id="investigatingLabel">You are investigating:</p>
+          <h2 class="panel-title" id="panelTitle">Indicator</h2>
+          <p class="explanation" id="panelExplanation"></p>
+
+          <div class="chart-wrap">
+            <canvas id="chartCanvas" width="640" height="360" aria-label="Indicator chart"></canvas>
+          </div>
+
+          <div class="tip-box">
+            <h4>Scientist Tip</h4>
+            <p id="scientistTip"></p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-group">
+            <label for="patternBox">What pattern do you notice?</label>
+            <textarea id="patternBox" placeholder="I notice that..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="riskBox">Why might this matter for fire risk?</label>
+            <textarea id="riskBox" placeholder="This might matter because..."></textarea>
+          </div>
+
+          <div class="actions">
+            <button id="saveBtn" class="btn-primary">Save Observation</button>
+            <button id="backBtn" class="btn-secondary">Back to Data Choices</button>
+          </div>
+
+          <div class="status" id="statusMessage"></div>
+
+          <div class="saved-list">
+            <h4>Saved Evidence Notes</h4>
+            <div id="savedNotesList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const indicators = {
+      rainfall: {
+        name: "Rainfall",
+        unit: "Inches of Rain",
+        color: "#4d7ea8",
+        explanation:
+          "Rainfall tells us how much water fell from the sky. When an area gets less rain over time, the land can become drier.",
+        tip:
+          "Look at whether the numbers go up, go down, or stay about the same over the years.",
+        years: ["2021", "2022", "2023", "2024"],
+        values: [24, 21, 17, 14]
+      },
+      temperature: {
+        name: "Temperature",
+        unit: "Average Summer °F",
+        color: "#c97a52",
+        explanation:
+          "Temperature shows how warm the area has been. Hotter conditions can dry out plants and soil more quickly.",
+        tip:
+          "Pay attention to whether the hottest years are also the most recent years.",
+        years: ["2021", "2022", "2023", "2024"],
+        values: [84, 86, 88, 91]
+      },
+      wind: {
+        name: "Wind",
+        unit: "Average Wind Speed (mph)",
+        color: "#5a8f7b",
+        explanation:
+          "Wind can help push flames and embers from one place to another. Some years may have stronger winds than others.",
+        tip:
+          "Notice which years stand out. A pattern does not always have to be a straight line up or down.",
+        years: ["2021", "2022", "2023", "2024"],
+        values: [10, 15, 11, 17]
+      },
+      fuelMoisture: {
+        name: "Fuel Moisture",
+        unit: "Plant Moisture (%)",
+        color: "#7a9a46",
+        explanation:
+          "Fuel moisture tells us how much water is inside grasses, leaves, and small plants. Lower moisture means plants can burn more easily.",
+        tip:
+          "Think about what happens when plants lose water. Dry fuel can catch fire faster.",
+        years: ["2021", "2022", "2023", "2024"],
+        values: [78, 70, 61, 52]
+      }
+    };
+
+    const STORAGE_KEY = "noaa_data_review_simulator_notes_v1";
+
+    const choicesView = document.getElementById("choicesView");
+    const panelView = document.getElementById("panelView");
+    const choicesGrid = document.getElementById("choicesGrid");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelExplanation = document.getElementById("panelExplanation");
+    const scientistTip = document.getElementById("scientistTip");
+    const investigatingLabel = document.getElementById("investigatingLabel");
+    const patternBox = document.getElementById("patternBox");
+    const riskBox = document.getElementById("riskBox");
+    const statusMessage = document.getElementById("statusMessage");
+    const savedNotesList = document.getElementById("savedNotesList");
+    const canvas = document.getElementById("chartCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const saveBtn = document.getElementById("saveBtn");
+    const backBtn = document.getElementById("backBtn");
+    const resumeBtn = document.getElementById("resumeBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let currentIndicatorKey = null;
+    let notes = loadNotes();
+
+    function renderChoices() {
+      choicesGrid.innerHTML = "";
+      Object.entries(indicators).forEach(([key, item]) => {
+        const card = document.createElement("div");
+        card.className = "choice-card";
+        card.innerHTML = `
+          <span class="tag">Data Indicator</span>
+          <h3>${item.name}</h3>
+          <p>${item.explanation}</p>
+          <button class="btn-primary" data-key="${key}">Investigate ${item.name}</button>
+        `;
+        choicesGrid.appendChild(card);
+      });
+
+      choicesGrid.querySelectorAll("button[data-key]").forEach((btn) => {
+        btn.addEventListener("click", () => openIndicator(btn.dataset.key));
+      });
+    }
+
+    function openIndicator(key) {
+      currentIndicatorKey = key;
+      const item = indicators[key];
+      panelTitle.textContent = item.name;
+      panelExplanation.textContent = item.explanation;
+      scientistTip.textContent = item.tip;
+      investigatingLabel.textContent = `You are investigating: ${item.name}`;
+
+      const existing = notes[key] || { pattern: "", risk: "" };
+      patternBox.value = existing.pattern || "";
+      riskBox.value = existing.risk || "";
+      statusMessage.textContent = "";
+
+      choicesView.classList.remove("active");
+      panelView.classList.add("active");
+
+      drawChart(item);
+      renderSavedNotes();
+    }
+
+    function goBackToChoices() {
+      panelView.classList.remove("active");
+      choicesView.classList.add("active");
+      currentIndicatorKey = null;
+      statusMessage.textContent = "";
+    }
+
+    function drawChart(item) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const cssWidth = rect.width || 640;
+      const cssHeight = 360;
+      canvas.width = cssWidth * dpr;
+      canvas.height = cssHeight * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
+
+      const w = cssWidth;
+      const h = cssHeight;
+      const padding = { top: 30, right: 24, bottom: 60, left: 58 };
+      const plotW = w - padding.left - padding.right;
+      const plotH = h - padding.top - padding.bottom;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const values = item.values;
+      const years = item.years;
+      const minVal = Math.min(...values);
+      const maxVal = Math.max(...values);
+      const range = Math.max(1, maxVal - minVal);
+      const niceMin = Math.floor((minVal - range * 0.15));
+      const niceMax = Math.ceil((maxVal + range * 0.15));
+
+      ctx.strokeStyle = "#cfdad4";
+      ctx.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (plotH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(w - padding.right, y);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#7d948d";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, padding.top);
+      ctx.lineTo(padding.left, h - padding.bottom);
+      ctx.lineTo(w - padding.right, h - padding.bottom);
+      ctx.stroke();
+
+      ctx.fillStyle = "#4b605a";
+      ctx.font = "14px Segoe UI, sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i <= 4; i++) {
+        const val = niceMax - ((niceMax - niceMin) / 4) * i;
+        const y = padding.top + (plotH / 4) * i;
+        ctx.fillText(Math.round(val), padding.left - 8, y);
+      }
+
+      const xStep = plotW / (years.length - 1);
+      const points = values.map((val, i) => {
+        const x = padding.left + xStep * i;
+        const y =
+          padding.top +
+          ((niceMax - val) / (niceMax - niceMin || 1)) * plotH;
+        return { x, y, val, year: years[i] };
+      });
+
+      ctx.strokeStyle = item.color;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      points.forEach((pt, i) => {
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+
+      points.forEach((pt) => {
+        ctx.fillStyle = item.color;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#29433d";
+        ctx.font = "13px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(pt.year, pt.x, h - padding.bottom + 12);
+
+        ctx.textBaseline = "bottom";
+        ctx.fillText(pt.val, pt.x, pt.y - 10);
+      });
+
+      ctx.save();
+      ctx.translate(18, h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = "#29433d";
+      ctx.font = "14px Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(item.unit, 0, 0);
+      ctx.restore();
+
+      ctx.fillStyle = "#29433d";
+      ctx.font = "15px Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Year", padding.left + plotW / 2, h - 16);
+    }
+
+    function saveCurrentObservation() {
+      if (!currentIndicatorKey) return;
+
+      notes[currentIndicatorKey] = {
+        pattern: patternBox.value.trim(),
+        risk: riskBox.value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+      renderSavedNotes();
+
+      const label = indicators[currentIndicatorKey].name.toLowerCase();
+      statusMessage.textContent = `You recorded evidence about ${label}.`;
+    }
+
+    function loadNotes() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function resumeSavedWork() {
+      notes = loadNotes();
+      renderSavedNotes();
+
+      if (currentIndicatorKey && notes[currentIndicatorKey]) {
+        patternBox.value = notes[currentIndicatorKey].pattern || "";
+        riskBox.value = notes[currentIndicatorKey].risk || "";
+        statusMessage.textContent = `Saved notes reloaded for ${indicators[currentIndicatorKey].name.toLowerCase()}.`;
+      } else {
+        const availableKeys = Object.keys(notes);
+        if (availableKeys.length > 0) {
+          statusMessage.textContent = "Saved notes were reloaded.";
+        } else {
+          statusMessage.textContent = "No saved notes were found yet.";
+        }
+      }
+    }
+
+    function renderSavedNotes() {
+      const entries = Object.entries(notes);
+      if (entries.length === 0) {
+        savedNotesList.innerHTML = `<p style="margin:0;color:#5f6f6c;">No saved evidence notes yet.</p>`;
+        return;
+      }
+
+      savedNotesList.innerHTML = entries
+        .map(([key, value]) => {
+          const title = indicators[key] ? indicators[key].name : key;
+          return `
+            <div class="saved-item">
+              <strong>${title}</strong>
+              <p><strong>Pattern:</strong> ${escapeHtml(value.pattern || "No note yet.")}</p>
+              <p><strong>Fire Risk:</strong> ${escapeHtml(value.risk || "No note yet.")}</p>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function exportNotes() {
+      const entries = Object.entries(notes);
+      if (entries.length === 0) {
+        if (currentIndicatorKey) {
+          statusMessage.textContent = "There are no saved notes to export yet.";
+        } else {
+          alert("There are no saved notes to export yet.");
+        }
+        return;
+      }
+
+      let text = "NOAA Data Review Simulator - Student Notes\n";
+      text += "=========================================\n\n";
+
+      entries.forEach(([key, value]) => {
+        const title = indicators[key] ? indicators[key].name : key;
+        text += `${title}\n`;
+        text += `Pattern noticed: ${value.pattern || ""}\n`;
+        text += `Why it matters for fire risk: ${value.risk || ""}\n`;
+        text += "\n";
+      });
+
+      const blob = new Blob([text], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "noaa-data-review-notes.txt";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      if (currentIndicatorKey) {
+        statusMessage.textContent = "Your notes were exported as a text file.";
+      }
+    }
+
+    function resetSimulator() {
+      const confirmed = confirm("Are you sure you want to clear all saved notes and reset the simulator?");
+      if (!confirmed) return;
+
+      localStorage.removeItem(STORAGE_KEY);
+      notes = {};
+      patternBox.value = "";
+      riskBox.value = "";
+      renderSavedNotes();
+      statusMessage.textContent = "The simulator was reset.";
+      goBackToChoices();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    saveBtn.addEventListener("click", saveCurrentObservation);
+    backBtn.addEventListener("click", goBackToChoices);
+    resumeBtn.addEventListener("click", resumeSavedWork);
+    exportBtn.addEventListener("click", exportNotes);
+    resetBtn.addEventListener("click", resetSimulator);
+
+    window.addEventListener("resize", () => {
+      if (currentIndicatorKey) {
+        drawChart(indicators[currentIndicatorKey]);
+      }
+    });
+
+    renderChoices();
+    renderSavedNotes();
+  </script>
+</body>
+</html>
