@@ -105,12 +105,6 @@
       border: 1px solid #e6ccb7;
     }
 
-    .btn-danger {
-      background: #fff0ed;
-      color: #9a4730;
-      border: 1px solid #efc7bc;
-    }
-
     .choices-view,
     .panel-view {
       display: none;
@@ -123,7 +117,7 @@
 
     .choices-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
     }
 
@@ -274,33 +268,24 @@
       color: #2c675b;
     }
 
-    .saved-list {
+    .evidence-preview {
       margin-top: 18px;
       padding-top: 16px;
       border-top: 1px dashed #d6e0da;
     }
 
-    .saved-list h4 {
+    .evidence-preview h4 {
       margin: 0 0 10px;
       color: #305a51;
     }
 
-    .saved-item {
+    .preview-box {
       background: #f7faf8;
       border: 1px solid #dce6e0;
       border-radius: 14px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-    }
-
-    .saved-item strong {
-      color: #23443d;
-    }
-
-    .saved-item p {
-      margin: 6px 0 0;
+      padding: 12px;
       color: var(--muted);
-      font-size: 0.95rem;
+      white-space: pre-wrap;
     }
 
     @media (max-width: 860px) {
@@ -313,6 +298,10 @@
       .choice-card {
         padding: 18px;
       }
+
+      .choices-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -324,9 +313,7 @@
     </section>
 
     <div class="toolbar">
-      <button id="resumeBtn" class="btn-secondary">Resume Saved Work</button>
-      <button id="exportBtn" class="btn-warm">Export My Notes</button>
-      <button id="resetBtn" class="btn-danger">Reset Simulator</button>
+      <button id="backToChoicesTopBtn" class="btn-secondary" style="display:none;">Back to Data Choices</button>
     </div>
 
     <section id="choicesView" class="choices-view active">
@@ -352,25 +339,25 @@
 
         <div class="card">
           <div class="form-group">
-            <label for="patternBox">What pattern do you notice?</label>
+            <label for="patternBox">Pattern I Notice</label>
             <textarea id="patternBox" placeholder="I notice that..."></textarea>
           </div>
 
           <div class="form-group">
-            <label for="riskBox">Why might this matter for fire risk?</label>
-            <textarea id="riskBox" placeholder="This might matter because..."></textarea>
+            <label for="riskBox">Why This Matters for Fire Risk</label>
+            <textarea id="riskBox" placeholder="This matters for fire risk because..."></textarea>
           </div>
 
           <div class="actions">
-            <button id="saveBtn" class="btn-primary">Save Observation</button>
+            <button id="sendBtn" class="btn-primary">Add to Lesson Journal</button>
             <button id="backBtn" class="btn-secondary">Back to Data Choices</button>
           </div>
 
           <div class="status" id="statusMessage"></div>
 
-          <div class="saved-list">
-            <h4>Saved Evidence Notes</h4>
-            <div id="savedNotesList"></div>
+          <div class="evidence-preview">
+            <h4>Evidence That Will Be Sent</h4>
+            <div class="preview-box" id="previewBox">Choose a data indicator and write your observation.</div>
           </div>
         </div>
       </div>
@@ -383,49 +370,39 @@
         name: "Rainfall",
         unit: "Inches of Rain",
         color: "#4d7ea8",
-        explanation:
-          "Rainfall tells us how much water fell from the sky.",
-        tip:
-          "Look at whether the numbers go up, go down, or stay about the same over the years.",
-        years: ["2021", "2022", "2023", "2024"],
-        values: [24, 21, 17, 14]
+        explanation: "Rainfall tells us how much water fell from the sky.",
+        tip: "Look at whether the numbers go up, go down, or stay about the same over the years.",
+        years: ["2020", "2021", "2022", "2023", "2024", "2025", "2026"],
+        values: [26, 24, 21, 18, 15, 13, 11]
       },
       temperature: {
         name: "Temperature",
         unit: "Average Summer °F",
         color: "#c97a52",
-        explanation:
-          "Temperature shows how warm the area has been.",
-        tip:
-          "Pay attention to whether the hottest years are also the most recent years.",
-        years: ["2021", "2022", "2023", "2024"],
-        values: [84, 86, 88, 91]
+        explanation: "Temperature shows how warm the area has been.",
+        tip: "Pay attention to whether the hottest years are also the most recent years.",
+        years: ["2020", "2021", "2022", "2023", "2024", "2025", "2026"],
+        values: [82, 84, 85, 87, 89, 91, 93]
       },
       wind: {
         name: "Wind",
         unit: "Average Wind Speed (mph)",
         color: "#5a8f7b",
-        explanation:
-          "Wind conditions change from year to year. Look for patterns and consider what those changes might mean.",
-        tip:
-          "Notice which years stand out. A pattern does not always have to be a straight line up or down.",
-        years: ["2021", "2022", "2023", "2024"],
-        values: [10, 15, 11, 17]
+        explanation: "Wind conditions change from year to year. Look for patterns and consider what those changes might mean.",
+        tip: "Notice which years stand out. A pattern does not always have to be a straight line up or down.",
+        years: ["2020", "2021", "2022", "2023", "2024", "2025", "2026"],
+        values: [9, 11, 13, 10, 15, 14, 18]
       },
       fuelMoisture: {
         name: "Fuel Moisture",
         unit: "Plant Moisture (%)",
         color: "#7a9a46",
-        explanation:
-          "Fuel moisture tells us how much water is inside grasses, leaves, and small plants.",
-        tip:
-          "Think about what happens when plants lose water. Dry fuel can catch fire faster.",
-        years: ["2021", "2022", "2023", "2024"],
-        values: [78, 70, 61, 52]
+        explanation: "Fuel moisture tells us how much water is inside grasses, leaves, and small plants.",
+        tip: "Think about what happens when plants lose water. Dry fuel can catch fire faster.",
+        years: ["2020", "2021", "2022", "2023", "2024", "2025", "2026"],
+        values: [82, 78, 73, 67, 61, 55, 49]
       }
     };
-
-    const STORAGE_KEY = "noaa_data_review_simulator_notes_v1";
 
     const choicesView = document.getElementById("choicesView");
     const panelView = document.getElementById("panelView");
@@ -437,21 +414,19 @@
     const patternBox = document.getElementById("patternBox");
     const riskBox = document.getElementById("riskBox");
     const statusMessage = document.getElementById("statusMessage");
-    const savedNotesList = document.getElementById("savedNotesList");
+    const previewBox = document.getElementById("previewBox");
     const canvas = document.getElementById("chartCanvas");
     const ctx = canvas.getContext("2d");
 
-    const saveBtn = document.getElementById("saveBtn");
+    const sendBtn = document.getElementById("sendBtn");
     const backBtn = document.getElementById("backBtn");
-    const resumeBtn = document.getElementById("resumeBtn");
-    const exportBtn = document.getElementById("exportBtn");
-    const resetBtn = document.getElementById("resetBtn");
+    const backToChoicesTopBtn = document.getElementById("backToChoicesTopBtn");
 
     let currentIndicatorKey = null;
-    let notes = loadNotes();
 
     function renderChoices() {
       choicesGrid.innerHTML = "";
+
       Object.entries(indicators).forEach(([key, item]) => {
         const card = document.createElement("div");
         card.className = "choice-card";
@@ -472,28 +447,100 @@
     function openIndicator(key) {
       currentIndicatorKey = key;
       const item = indicators[key];
+
       panelTitle.textContent = item.name;
       panelExplanation.textContent = item.explanation;
       scientistTip.textContent = item.tip;
       investigatingLabel.textContent = `You are investigating: ${item.name}`;
-
-      const existing = notes[key] || { pattern: "", risk: "" };
-      patternBox.value = existing.pattern || "";
-      riskBox.value = existing.risk || "";
       statusMessage.textContent = "";
+
+      patternBox.value = "";
+      riskBox.value = "";
 
       choicesView.classList.remove("active");
       panelView.classList.add("active");
+      backToChoicesTopBtn.style.display = "inline-flex";
 
       drawChart(item);
-      renderSavedNotes();
+      updatePreview();
     }
 
     function goBackToChoices() {
       panelView.classList.remove("active");
       choicesView.classList.add("active");
+      backToChoicesTopBtn.style.display = "none";
       currentIndicatorKey = null;
       statusMessage.textContent = "";
+      previewBox.textContent = "Choose a data indicator and write your observation.";
+    }
+
+    function updatePreview() {
+      if (!currentIndicatorKey) {
+        previewBox.textContent = "Choose a data indicator and write your observation.";
+        return;
+      }
+
+      const item = indicators[currentIndicatorKey];
+      const pattern = patternBox.value.trim();
+      const risk = riskBox.value.trim();
+
+      const previewLines = [
+        `Source: NOAA Data Review Simulator`,
+        `Indicator: ${item.name}`,
+        `Years Reviewed: ${item.years[0]}–${item.years[item.years.length - 1]}`,
+        `Pattern I Notice: ${pattern || "[Student has not written this yet]"}`,
+        `Why This Matters for Fire Risk: ${risk || "[Student has not written this yet]"}`
+      ];
+
+      previewBox.textContent = previewLines.join("\n");
+    }
+
+    function buildEvidencePayload() {
+      if (!currentIndicatorKey) return null;
+
+      const item = indicators[currentIndicatorKey];
+      const pattern = patternBox.value.trim();
+      const risk = riskBox.value.trim();
+
+      return {
+        type: "SINS_NOAA_EVIDENCE",
+        source: "NOAA Data Review Simulator",
+        indicator: item.name,
+        yearsReviewed: `${item.years[0]}-${item.years[item.years.length - 1]}`,
+        pattern,
+        fireRiskReason: risk,
+        formattedText:
+`Source: NOAA Data Review Simulator
+Indicator: ${item.name}
+Years Reviewed: ${item.years[0]}–${item.years[item.years.length - 1]}
+Pattern I Notice: ${pattern}
+Why This Matters for Fire Risk: ${risk}`
+      };
+    }
+
+    function sendToLessonJournal() {
+      const payload = buildEvidencePayload();
+
+      if (!payload) {
+        statusMessage.textContent = "Choose a data indicator first.";
+        return;
+      }
+
+      if (!payload.pattern || !payload.fireRiskReason) {
+        statusMessage.textContent = "Write both responses before sending to the lesson journal.";
+        return;
+      }
+
+      try {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(payload, "*");
+          statusMessage.textContent = "Evidence sent to the lesson journal.";
+        } else {
+          statusMessage.textContent = "This tool is not currently embedded inside a lesson, so there is no parent journal to receive the evidence.";
+        }
+      } catch (error) {
+        statusMessage.textContent = "The evidence could not be sent to the lesson journal.";
+      }
     }
 
     function drawChart(item) {
@@ -501,14 +548,16 @@
       const rect = canvas.getBoundingClientRect();
       const cssWidth = rect.width || 640;
       const cssHeight = 360;
+
       canvas.width = cssWidth * dpr;
       canvas.height = cssHeight * dpr;
+
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
 
       const w = cssWidth;
       const h = cssHeight;
-      const padding = { top: 30, right: 24, bottom: 60, left: 58 };
+      const padding = { top: 30, right: 24, bottom: 70, left: 58 };
       const plotW = w - padding.left - padding.right;
       const plotH = h - padding.top - padding.bottom;
 
@@ -519,8 +568,8 @@
       const minVal = Math.min(...values);
       const maxVal = Math.max(...values);
       const range = Math.max(1, maxVal - minVal);
-      const niceMin = Math.floor((minVal - range * 0.15));
-      const niceMax = Math.ceil((maxVal + range * 0.15));
+      const niceMin = Math.floor(minVal - range * 0.15);
+      const niceMax = Math.ceil(maxVal + range * 0.15);
 
       ctx.strokeStyle = "#cfdad4";
       ctx.lineWidth = 1;
@@ -555,9 +604,7 @@
       const xStep = plotW / (years.length - 1);
       const points = values.map((val, i) => {
         const x = padding.left + xStep * i;
-        const y =
-          padding.top +
-          ((niceMax - val) / (niceMax - niceMin || 1)) * plotH;
+        const y = padding.top + ((niceMax - val) / (niceMax - niceMin || 1)) * plotH;
         return { x, y, val, year: years[i] };
       });
 
@@ -577,7 +624,7 @@
         ctx.fill();
 
         ctx.fillStyle = "#29433d";
-        ctx.font = "13px Segoe UI, sans-serif";
+        ctx.font = "12px Segoe UI, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.fillText(pt.year, pt.x, h - padding.bottom + 12);
@@ -598,137 +645,14 @@
       ctx.fillStyle = "#29433d";
       ctx.font = "15px Segoe UI, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("Year", padding.left + plotW / 2, h - 16);
+      ctx.fillText("Year", padding.left + plotW / 2, h - 18);
     }
 
-    function saveCurrentObservation() {
-      if (!currentIndicatorKey) return;
-
-      notes[currentIndicatorKey] = {
-        pattern: patternBox.value.trim(),
-        risk: riskBox.value.trim(),
-        updatedAt: new Date().toISOString()
-      };
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-      renderSavedNotes();
-
-      const label = indicators[currentIndicatorKey].name.toLowerCase();
-      statusMessage.textContent = `You recorded evidence about ${label}.`;
-    }
-
-    function loadNotes() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        return raw ? JSON.parse(raw) : {};
-      } catch (e) {
-        return {};
-      }
-    }
-
-    function resumeSavedWork() {
-      notes = loadNotes();
-      renderSavedNotes();
-
-      if (currentIndicatorKey && notes[currentIndicatorKey]) {
-        patternBox.value = notes[currentIndicatorKey].pattern || "";
-        riskBox.value = notes[currentIndicatorKey].risk || "";
-        statusMessage.textContent = `Saved notes reloaded for ${indicators[currentIndicatorKey].name.toLowerCase()}.`;
-      } else {
-        const availableKeys = Object.keys(notes);
-        if (availableKeys.length > 0) {
-          statusMessage.textContent = "Saved notes were reloaded.";
-        } else {
-          statusMessage.textContent = "No saved notes were found yet.";
-        }
-      }
-    }
-
-    function renderSavedNotes() {
-      const entries = Object.entries(notes);
-      if (entries.length === 0) {
-        savedNotesList.innerHTML = `<p style="margin:0;color:#5f6f6c;">No saved evidence notes yet.</p>`;
-        return;
-      }
-
-      savedNotesList.innerHTML = entries
-        .map(([key, value]) => {
-          const title = indicators[key] ? indicators[key].name : key;
-          return `
-            <div class="saved-item">
-              <strong>${title}</strong>
-              <p><strong>Pattern:</strong> ${escapeHtml(value.pattern || "No note yet.")}</p>
-              <p><strong>Fire Risk:</strong> ${escapeHtml(value.risk || "No note yet.")}</p>
-            </div>
-          `;
-        })
-        .join("");
-    }
-
-    function exportNotes() {
-      const entries = Object.entries(notes);
-      if (entries.length === 0) {
-        if (currentIndicatorKey) {
-          statusMessage.textContent = "There are no saved notes to export yet.";
-        } else {
-          alert("There are no saved notes to export yet.");
-        }
-        return;
-      }
-
-      let text = "NOAA Data Review Simulator - Student Notes\n";
-      text += "=========================================\n\n";
-
-      entries.forEach(([key, value]) => {
-        const title = indicators[key] ? indicators[key].name : key;
-        text += `${title}\n`;
-        text += `Pattern noticed: ${value.pattern || ""}\n`;
-        text += `Why it matters for fire risk: ${value.risk || ""}\n`;
-        text += "\n";
-      });
-
-      const blob = new Blob([text], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "noaa-data-review-notes.txt";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-
-      if (currentIndicatorKey) {
-        statusMessage.textContent = "Your notes were exported as a text file.";
-      }
-    }
-
-    function resetSimulator() {
-      const confirmed = confirm("Are you sure you want to clear all saved notes and reset the simulator?");
-      if (!confirmed) return;
-
-      localStorage.removeItem(STORAGE_KEY);
-      notes = {};
-      patternBox.value = "";
-      riskBox.value = "";
-      renderSavedNotes();
-      statusMessage.textContent = "The simulator was reset.";
-      goBackToChoices();
-    }
-
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    saveBtn.addEventListener("click", saveCurrentObservation);
+    patternBox.addEventListener("input", updatePreview);
+    riskBox.addEventListener("input", updatePreview);
+    sendBtn.addEventListener("click", sendToLessonJournal);
     backBtn.addEventListener("click", goBackToChoices);
-    resumeBtn.addEventListener("click", resumeSavedWork);
-    exportBtn.addEventListener("click", exportNotes);
-    resetBtn.addEventListener("click", resetSimulator);
+    backToChoicesTopBtn.addEventListener("click", goBackToChoices);
 
     window.addEventListener("resize", () => {
       if (currentIndicatorKey) {
@@ -737,7 +661,7 @@
     });
 
     renderChoices();
-    renderSavedNotes();
+    updatePreview();
   </script>
 </body>
 </html>
